@@ -1,0 +1,10 @@
+[package]
+name = "schiro-codegen"
+version = "0.1.0"
+edition = "2021"
+description = "LLVM codegen backend for SchiroLang"
+
+[dependencies]
+inkwell = { version = "0.9", features = ["llvm18-1"] }
+schiro-ast = { path = "../schiro-ast" }
+schiro-semantic = { path = "../schiro-semantic" }
