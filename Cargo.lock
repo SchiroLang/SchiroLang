@@ -9,6 +9,7 @@ dependencies = [
  "schiro-ast",
  "schiro-lexer",
  "schiro-parser",
+ "schiro-semantic",
 ]
 
 [[package]]
@@ -25,4 +26,11 @@ version = "0.1.0"
 dependencies = [
  "schiro-ast",
  "schiro-lexer",
+]
+
+[[package]]
+name = "schiro-semantic"
+version = "0.1.0"
+dependencies = [
+ "schiro-ast",
 ]

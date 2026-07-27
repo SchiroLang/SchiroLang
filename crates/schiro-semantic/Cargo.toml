@@ -1,0 +1,8 @@
+[package]
+name = "schiro-semantic"
+version = "0.1.0"
+edition = "2021"
+description = "Semantic analysis for SchiroLang — scope, name resolution, type checking"
+
+[dependencies]
+schiro-ast = { path = "../schiro-ast" }
