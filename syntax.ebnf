@@ -1,0 +1,210 @@
+(* ================================================================
+   SchiroLang – EBNF Grammar (complet)
+   ================================================================ *)
+
+(* ---- Top-level ---- *)
+CompilationUnit    = { ImportDirective }, { TopLevelDecl } ;
+
+TopLevelDecl       = TypeDecl
+                   | FnDecl
+                   | TraitDecl
+                   | ImplBlock
+                   | StaticDecl
+                   ;
+
+(* ---- Imports ---- *)
+ImportDirective    = 'import' ModulePath [ 'as' Alias ] ';' ;
+ModulePath         = Identifier { '.' Identifier } ;
+Alias              = Identifier ;
+
+(* ---- Types ---- *)
+TypeDecl           = 'type' Identifier TypeParams '=' SumType ';'
+                   | ValueClassDecl
+                   | RefClassDecl
+                   ;
+
+SumType            = Variant { '|' Variant } ;
+Variant            = Identifier [ '(' [ FieldList ] ')' ] [ 'impl' TraitRefList ] ;
+
+TypeParams         = [ '<' TypeParam { ',' TypeParam } '>' ] ;
+TypeParam          = Identifier [ ':' ConstraintList ] ;
+ConstraintList     = TraitRef { '+' TraitRef } ;
+
+(* ---- Type references ---- *)
+TypeRef            = Identifier [ '<' TypeArgList '>' ]
+                   | '&' TypeRef
+                   | 'mut' TypeRef
+                   | '[' TypeRef ']'
+                   | '(' [ TypeRefList ] ')'
+                   | TypeRef '->' TypeRef
+                   | 'Self'
+                   ;
+
+TypeArgList        = TypeRef { ',' TypeRef } ;
+TraitRef           = Identifier [ '<' TypeArgList '>' ] ;
+TraitRefList       = TraitRef { ',' TraitRef } ;
+TypeRefList        = TypeRef { ',' TypeRef } ;
+
+(* ---- Value class ---- *)
+ValueClassDecl     = 'value' 'class' Identifier TypeParams '(' FieldList ')' [ 'impl' TraitRefList ] ClassBody ;
+
+(* ---- Ref class ---- *)
+RefClassDecl       = 'ref' 'class' Identifier TypeParams '(' FieldList ')' [ 'impl' TraitRefList ] ClassBody ;
+
+(* ---- Class body ---- *)
+ClassBody          = ':' '{' { ClassMember } '}' | ':' ClassMemberList | ';' ;
+ClassMemberList    = ClassMember { ';' ClassMember } [ ';' ] ;
+ClassMember        = FnDecl
+                   | PropDecl
+                   | ConstructorDecl
+                   ;
+
+(* ---- Fields ---- *)
+FieldList          = Field { ',' Field } ;
+Field              = [ 'mut' ] Identifier ':' TypeRef [ '=' Expression ] ;
+
+(* ---- Constructor ---- *)
+ConstructorDecl    = 'fn' 'new' '(' [ ParamList ] ')' [ '->' 'Self' ] [ ':' Expression ] BlockOrSemi ;
+
+(* ---- Methods / Functions ---- *)
+FnDecl             = 'fn' Identifier TypeParams '(' [ ParamList ] ')' [ '->' TypeRef ] BlockOrSemi ;
+
+ParamList          = Param { ',' Param } ;
+Param              = [ 'mut' ] Identifier ':' TypeRef [ '=' Expression ] ;
+
+BlockOrSemi        = Block | ';' ;
+Block              = '{' { Statement } '}' ;
+
+(* ---- Traits ---- *)
+TraitDecl          = 'trait' Identifier TypeParams ':' '{' { TraitMember } '}' ;
+TraitMember        = FnSignature
+                   | PropSignature
+                   ;
+FnSignature        = 'fn' Identifier '(' [ ParamList ] ')' [ '->' TypeRef ] ';' ;
+PropSignature      = 'prop' Identifier ':' TypeRef [ ';' ] ;
+
+(* ---- Impl blocks ---- *)
+ImplBlock          = 'impl' TraitRef 'for' TypeRef ':' '{' { ClassMember } '}'
+                   | 'impl' TypeRef ':' '{' { ClassMember } '}'
+                   ;
+
+(* ---- Properties ---- *)
+PropDecl           = 'prop' Identifier [ ':' TypeRef ] PropAccessors ;
+PropAccessors      = ':' '{' AccessorDecl [ AccessorDecl ] '}' | '=' Expression ';' ;
+AccessorDecl       = 'get' [ Block ]
+                   | 'set' '(' Identifier ')' Block
+                   ;
+
+(* ---- Statics ---- *)
+StaticDecl         = 'let' Identifier ':' TypeRef '=' Expression ';' ;
+
+(* ---- Statements ---- *)
+Statement          = LetDecl
+                   | Assignment
+                   | IfExpr
+                   | MatchExpr
+                   | LoopExpr
+                   | WhileExpr
+                   | ForExpr
+                   | ReturnStmt
+                   | BreakStmt
+                   | ContinueStmt
+                   | Expression ';'
+                   | Block
+                   ;
+
+LetDecl            = 'let' Pattern [ ':' TypeRef ] '=' Expression ';' ;
+
+Assignment         = LValue '=' Expression ';' ;
+
+LValue             = Identifier
+                   | LValue '.' Identifier
+                   | LValue '[' Expression ']'
+                   ;
+
+ReturnStmt         = 'return' [ Expression ] ';' ;
+BreakStmt          = 'break' [ Expression ] ';' ;
+ContinueStmt       = 'continue' ';' ;
+
+(* ---- Expressions ---- *)
+Expression         = OrExpr ( '=>' Expression )? ;       (* match arm sugar *)
+
+OrExpr             = AndExpr { '||' AndExpr } ;
+AndExpr            = CmpExpr { '&&' CmpExpr } ;
+CmpExpr            = PipeExpr [ CmpOp PipeExpr ] ;
+PipeExpr           = RangeExpr { '|>' RangeExpr } ;      (* pipe forward *)
+RangeExpr          = AddExpr [ '..' AddExpr ] ;
+AddExpr            = MulExpr { AddOp MulExpr } ;
+MulExpr            = UnaryExpr { MulOp UnaryExpr } ;
+
+UnaryExpr          = [ UnaryOp ] CallExpr ;
+CallExpr           = PrimaryExpr { Suffix } ;
+
+PrimaryExpr        = Literal
+                   | Identifier
+                   | '(' Expression ')'
+                   | '[' [ ExpressionList ] ']'
+                   | Block                                    (* block -> expr *)
+                   | IfExpr
+                   | MatchExpr
+                   | LoopExpr
+                   | WhileExpr
+                   | ForExpr
+                   | '|' [ ParamList ] '|' [ '->' TypeRef ] Block  (* lambda *)
+                   ;
+
+Suffix             = '.' Identifier                     (* field / method *)
+                   | '(' [ ArgList ] ')'                (* call *)
+                   | '[' Expression ']'                 (* index *)
+                   | '?'                                (* unwrap / try *)
+                   | '!'                                (* force unwrap *)
+                   ;
+
+ArgList            = Expression { ',' Expression } ;
+ExpressionList     = Expression { ',' Expression } ;
+
+(* ---- Control flow ---- *)
+IfExpr             = 'if' Expression Block [ 'else' ( IfExpr | Block ) ] ;
+
+MatchExpr          = 'match' Expression ':' '{' { MatchArm } '}' ;
+MatchArm           = Pattern [ 'if' Expression ] '=>' Expression ',' ;
+
+Pattern            = Identifier
+                   | '_'
+                   | Literal
+                   | Identifier '(' [ PatternList ] ')'    (* destructure variant *)
+                   | '[' [ PatternList ] ']'               (* destructure tuple *)
+                   | Pattern '|' Pattern                   (* or pattern *)
+                   ;
+PatternList        = Pattern { ',' Pattern } ;
+
+LoopExpr           = 'loop' Block ;
+WhileExpr          = 'while' Expression Block ;
+ForExpr            = 'for' Pattern 'in' Expression Block ;
+
+(* ---- Operators ---- *)
+AddOp              = '+' | '-' ;
+MulOp              = '*' | '/' | '%' ;
+CmpOp              = '==' | '!=' | '<' | '>' | '<=' | '>=' ;
+UnaryOp            = '-' | '!' | '&' | '&mut' ;
+
+(* ---- Literals ---- *)
+Literal            = IntLiteral
+                   | FloatLiteral
+                   | StringLiteral
+                   | CharLiteral
+                   | BoolLiteral
+                   | 'null'
+                   ;
+
+IntLiteral         = Digit { Digit } ;
+FloatLiteral       = Digit { Digit } '.' Digit { Digit } [ ('e' | 'E') [ '+' | '-' ] Digit { Digit } ] ;
+StringLiteral      = '"' { Char | EscapeSeq } '"' ;
+CharLiteral        = "'" ( Char | EscapeSeq ) "'" ;
+BoolLiteral        = 'true' | 'false' ;
+
+Digit              = '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' ;
+Identifier         = ( '_' | Letter ) { '_' | Letter | Digit } ;
+Letter             = 'a'..'z' | 'A'..'Z' ;
+EscapeSeq          = '\\' ( 'n' | 't' | 'r' | '0' | '\\' | '"' | "'" | 'x' Hex Hex | 'u' '{' Hex { Hex } '}' ) ;
+Hex                = Digit | 'a'..'f' | 'A'..'F' ;
