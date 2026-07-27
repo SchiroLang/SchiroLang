@@ -1,7 +1,10 @@
 pub mod context;
+pub mod emit;
 pub mod expr;
 pub mod func;
 pub mod types;
+
+use std::path::Path;
 
 use schiro_ast::CompilationUnit;
 
@@ -26,5 +29,18 @@ impl<'ctx> CodeGen<'ctx> {
             }
         }
         self.llvm.print_to_string()
+    }
+
+    pub fn compile_to_exe(&mut self, cu: &CompilationUnit, output: &Path) -> Result<(), String> {
+        self.compile(cu);
+        emit::compile_to_exe(&self.llvm, output)
+    }
+
+    pub fn emit_ir(&self) -> String {
+        self.llvm.print_to_string()
+    }
+
+    pub fn verify(&self) -> bool {
+        self.llvm.module.verify().is_ok()
     }
 }
