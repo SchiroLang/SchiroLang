@@ -1,6 +1,6 @@
-(* ================================================================
-   SchiroLang – EBNF Grammar (complet)
-   ================================================================ *)
+(*  ╔══════════════════════════════════════════════════════════════╗
+    ║                      SchiroLang — EBNF                     ║
+    ╚══════════════════════════════════════════════════════════════╝ *)
 
 (* ---- Top-level ---- *)
 CompilationUnit    = { ImportDirective }, { TopLevelDecl } ;
@@ -19,8 +19,7 @@ Alias              = Identifier ;
 
 (* ---- Types ---- *)
 TypeDecl           = 'type' Identifier TypeParams '=' SumType ';'
-                   | ValueClassDecl
-                   | RefClassDecl
+                   | ClassDecl
                    ;
 
 SumType            = Variant { '|' Variant } ;
@@ -46,28 +45,33 @@ TraitRefList       = TraitRef { ',' TraitRef } ;
 TypeRefList        = TypeRef { ',' TypeRef } ;
 
 (* ---- Value class ---- *)
-ValueClassDecl     = 'value' 'class' Identifier TypeParams '(' FieldList ')' [ 'impl' TraitRefList ] ClassBody ;
-
-(* ---- Ref class ---- *)
-RefClassDecl       = 'ref' 'class' Identifier TypeParams '(' FieldList ')' [ 'impl' TraitRefList ] ClassBody ;
+ClassDecl          = [ 'abstract' ] 'class' Identifier TypeParams
+                     [ '(' FieldList ')' ]
+                     [ 'extends' TypeRef ]
+                     [ 'impl' TraitRefList ]
+                     ClassBody ;
 
 (* ---- Class body ---- *)
 ClassBody          = ':' '{' { ClassMember } '}' | ':' ClassMemberList | ';' ;
 ClassMemberList    = ClassMember { ';' ClassMember } [ ';' ] ;
-ClassMember        = FnDecl
-                   | PropDecl
-                   | ConstructorDecl
+Visibility         = 'public' | 'protected' | 'private' ;
+ClassMember        = [ Visibility ] FnDecl
+                   | [ Visibility ] PropDecl
+                   | [ Visibility ] FieldDecl
+                   | [ Visibility ] ConstructorDecl
                    ;
+FieldDecl          = [ 'mut' ] Identifier ':' TypeRef [ '=' Expression ] ';' ;
 
 (* ---- Fields ---- *)
 FieldList          = Field { ',' Field } ;
 Field              = [ 'mut' ] Identifier ':' TypeRef [ '=' Expression ] ;
 
 (* ---- Constructor ---- *)
-ConstructorDecl    = 'fn' 'new' '(' [ ParamList ] ')' [ '->' 'Self' ] [ ':' Expression ] BlockOrSemi ;
+ConstructorDecl    = 'fn' 'new' '(' [ ParamList ] ')' [ ':' Expression ] Block ;
 
 (* ---- Methods / Functions ---- *)
-FnDecl             = 'fn' Identifier TypeParams '(' [ ParamList ] ')' [ '->' TypeRef ] BlockOrSemi ;
+FnDecl             = [ 'static' ] [ 'virtual' | 'override' | 'abstract' ]
+                     'fn' Identifier TypeParams '(' [ ParamList ] ')' [ '->' TypeRef ] BlockOrSemi ;
 
 ParamList          = Param { ',' Param } ;
 Param              = [ 'mut' ] Identifier ':' TypeRef [ '=' Expression ] ;
@@ -109,6 +113,7 @@ Statement          = LetDecl
                    | ReturnStmt
                    | BreakStmt
                    | ContinueStmt
+                   | SuperCall
                    | Expression ';'
                    | Block
                    ;
@@ -125,6 +130,7 @@ LValue             = Identifier
 ReturnStmt         = 'return' [ Expression ] ';' ;
 BreakStmt          = 'break' [ Expression ] ';' ;
 ContinueStmt       = 'continue' ';' ;
+SuperCall          = 'super' '(' [ ArgList ] ')' ';' ;
 
 (* ---- Expressions ---- *)
 Expression         = OrExpr ( '=>' Expression )? ;       (* match arm sugar *)
@@ -142,6 +148,8 @@ CallExpr           = PrimaryExpr { Suffix } ;
 
 PrimaryExpr        = Literal
                    | Identifier
+                   | 'self'
+                   | 'super'
                    | '(' Expression ')'
                    | '[' [ ExpressionList ] ']'
                    | Block                                    (* block -> expr *)
