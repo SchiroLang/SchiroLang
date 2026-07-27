@@ -1,0 +1,9 @@
+[package]
+name = "schiro-parser"
+version = "0.1.0"
+edition = "2021"
+description = "Parser for SchiroLang — tokens to AST"
+
+[dependencies]
+schiro-ast = { path = "../schiro-ast" }
+schiro-lexer = { path = "../schiro-lexer" }

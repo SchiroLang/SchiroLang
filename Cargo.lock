@@ -6,7 +6,9 @@ version = 4
 name = "schiro"
 version = "0.1.0"
 dependencies = [
+ "schiro-ast",
  "schiro-lexer",
+ "schiro-parser",
 ]
 
 [[package]]
@@ -16,3 +18,11 @@ version = "0.1.0"
 [[package]]
 name = "schiro-lexer"
 version = "0.1.0"
+
+[[package]]
+name = "schiro-parser"
+version = "0.1.0"
+dependencies = [
+ "schiro-ast",
+ "schiro-lexer",
+]

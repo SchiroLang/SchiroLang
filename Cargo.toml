@@ -5,11 +5,14 @@ edition = "2021"
 publish = false
 
 [dev-dependencies]
+schiro-ast = { path = "crates/schiro-ast" }
 schiro-lexer = { path = "crates/schiro-lexer" }
+schiro-parser = { path = "crates/schiro-parser" }
 
 [workspace]
 resolver = "2"
 members = [
     "crates/schiro-ast",
     "crates/schiro-lexer",
+    "crates/schiro-parser",
 ]

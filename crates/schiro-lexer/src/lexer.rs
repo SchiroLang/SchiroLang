@@ -313,6 +313,7 @@ impl<'a> Lexer<'a> {
             "extends" => TokenKind::Extends,
             "impl" => TokenKind::Impl,
             "for" => TokenKind::For,
+            "in" => TokenKind::In,
             "fn" => TokenKind::Fn,
             "new" => TokenKind::New,
             "static" => TokenKind::Static,
