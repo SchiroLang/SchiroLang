@@ -8,3 +8,7 @@ description = "LLVM codegen backend for SchiroLang"
 inkwell = { version = "0.9", features = ["llvm18-1"] }
 schiro-ast = { path = "../schiro-ast" }
 schiro-semantic = { path = "../schiro-semantic" }
+
+[dev-dependencies]
+schiro-lexer = { path = "../schiro-lexer" }
+schiro-parser = { path = "../schiro-parser" }

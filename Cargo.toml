@@ -9,7 +9,6 @@ schiro-ast = { path = "crates/schiro-ast" }
 schiro-lexer = { path = "crates/schiro-lexer" }
 schiro-parser = { path = "crates/schiro-parser" }
 schiro-semantic = { path = "crates/schiro-semantic" }
-# schiro-codegen requires LLVM 18 with Polly — tested separately
 
 [workspace]
 resolver = "2"

@@ -124,6 +124,8 @@ version = "0.1.0"
 dependencies = [
  "inkwell",
  "schiro-ast",
+ "schiro-lexer",
+ "schiro-parser",
  "schiro-semantic",
 ]
 
