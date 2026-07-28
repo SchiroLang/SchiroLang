@@ -1,0 +1,14 @@
+[package]
+name = "schiro-cli"
+version = "0.1.0"
+edition = "2021"
+description = "SchiroLang command-line compiler"
+
+[dependencies]
+clap = { version = "4", features = ["derive"] }
+inkwell = { version = "0.9", features = ["llvm18-1"] }
+schiro-ast = { path = "../schiro-ast" }
+schiro-lexer = { path = "../schiro-lexer" }
+schiro-parser = { path = "../schiro-parser" }
+schiro-semantic = { path = "../schiro-semantic" }
+schiro-codegen = { path = "../schiro-codegen" }

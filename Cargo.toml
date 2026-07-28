@@ -18,4 +18,5 @@ members = [
     "crates/schiro-parser",
     "crates/schiro-semantic",
     "crates/schiro-codegen",
+    "crates/schiro-cli",
 ]
